@@ -596,7 +596,7 @@ func TestForTheCoverages(t *testing.T) {
 	(*NotificationEvent)(nil).event()
 	(*DeleteEvent)(nil).event()
 	(*ErrorEvent)(nil).event()
-	_ = (&ErrorEvent{io.EOF}).Error()
+	_ = (&ErrorEvent{Err: io.EOF}).Error()
 }
 
 func TestNewPagination(t *testing.T) {

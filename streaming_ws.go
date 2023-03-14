@@ -147,7 +147,7 @@ func (c *WSClient) handleWS(ctx context.Context, rawurl string, q chan Event) er
 			}
 		}
 		if err != nil {
-			q <- &ErrorEvent{err}
+			q <- &ErrorEvent{Parse: true, Err: err}
 		}
 	}
 

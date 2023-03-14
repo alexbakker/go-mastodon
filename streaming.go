@@ -40,7 +40,10 @@ type DeleteEvent struct{ ID ID }
 func (e *DeleteEvent) event() {}
 
 // ErrorEvent is a struct for passing errors to app.
-type ErrorEvent struct{ Err error }
+type ErrorEvent struct {
+	Parse bool
+	Err   error
+}
 
 func (e *ErrorEvent) event()        {}
 func (e *ErrorEvent) Error() string { return e.Err.Error() }
@@ -104,7 +107,7 @@ func handleReader(q chan Event, r io.Reader) error {
 				q <- &DeleteEvent{ID: ID(strings.TrimSpace(token[1]))}
 			}
 			if err != nil {
-				q <- &ErrorEvent{err}
+				q <- &ErrorEvent{Parse: true, Err: err}
 			}
 		}
 	}
@@ -156,19 +159,19 @@ func (c *Client) streaming(ctx context.Context, p string, params url.Values) (ch
 func (c *Client) doStreaming(req *http.Request, q chan Event) {
 	resp, err := c.Do(req)
 	if err != nil {
-		q <- &ErrorEvent{err}
+		q <- &ErrorEvent{Err: err}
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		q <- &ErrorEvent{parseAPIError("bad request", resp)}
+		q <- &ErrorEvent{Err: parseAPIError("bad request", resp)}
 		return
 	}
 
 	err = handleReader(q, resp.Body)
 	if err != nil {
-		q <- &ErrorEvent{err}
+		q <- &ErrorEvent{Err: err}
 	}
 }
 
